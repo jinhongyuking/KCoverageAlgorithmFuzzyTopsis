@@ -1,12 +1,8 @@
 #Create A Martix For Network And Has To Cover All K Coverage
-CreateNetworkMatrix <- function (networkModel,iTagsCount,iReadersCount,ipt,imaxCapacity)
+CreateNetworkMatrix <- function (networkModel)
 {
-  myNetwork <<- matrix(networkModel, nr = iTagsCount, nc = iReadersCount,TRUE)
-  TagsCount<<-iTagsCount
-  ReadersCount<<-iReadersCount
-  ptNumber<<-ipt
-  maxCapacity<<-imaxCapacity
-  returnValue(myNetwork) 
+  myNetwork <<- matrix(networkModel, nr = TagsCount, nc = ReadersCount,TRUE)
+  
 } 
 #Calculate Matrix For Coverage in K Coverage
 CalcFcov <- function ()
@@ -18,6 +14,11 @@ CalcFcov <- function ()
     sum<-0
     for (j in 1:ReadersCount)
     {
+      if (is.na(myNetwork[i,j]))
+      {
+        
+      }
+      else{
       if (myNetwork[i,j]-ptNumber>0)
       {
         sum<-sum+myNetwork[i,j]-ptNumber
@@ -27,6 +28,7 @@ CalcFcov <- function ()
     {
       min<-sum
     }
+      }
   }
   returnValue(min) 
 }
@@ -40,6 +42,11 @@ CalcFIntr<- function()
     sum<-0
     for (j in 1:ReadersCount)
     {
+      if (is.na(myNetwork[i,j]))
+      {
+        
+      }
+      else{
       if (myNetwork[i,j]-ptNumber>0)
       {
         sum<-sum+1
@@ -48,7 +55,7 @@ CalcFIntr<- function()
     if (sum<min) 
     {
       min<-sum
-    }
+    }}
   }
   returnValue(min) 
 }
@@ -63,6 +70,11 @@ CalcFLoadBalance<- function()
     sum<-0
     for (i in 1:TagsCount)
     {
+      if (is.na(myNetwork[i,j]))
+      {
+        
+      }
+      else{
       if (myNetwork[i,j]-ptNumber>0)
       {
         sum<-sum+1
@@ -70,6 +82,7 @@ CalcFLoadBalance<- function()
     }
     loadBL<-sum/maxCapacity
     lstLoad[[length(lstLoad)+1]]<-loadBL
+    }
   }
   output <- matrix(unlist(lstLoad), ncol = 1, byrow = TRUE)
   resultVar<-var(output)
@@ -86,6 +99,11 @@ CalcFAgregate<- function()
     sum<-0
     for (j in 1:ReadersCount)
     {
+      if (is.na(myNetwork[i,j]))
+      {
+        
+      }
+      else{
       if (myNetwork[i,j]-ptNumber>0)
       {
         sum<-sum+1
@@ -94,7 +112,214 @@ CalcFAgregate<- function()
     if (sum<min) 
     {
       min<-sum
-    }
+    }}
   }
   returnValue(min) 
+} 
+#Create A List For Making Decistion Based on them
+CreateLstAllNetworks <- function (iTagsCount,iReadersCount,ipt,imaxCapacity,kCoverage)
+{
+  TagsCount<<-iTagsCount
+  ReadersCount<<-iReadersCount
+  ptNumber<<-ipt
+  maxCapacity<<-imaxCapacity
+  decisionFuzzyModel<<-list()
+  modelCounter<-0
+  generalModel=c()
+ for (requeredCoverage in 0:ReadersCount-kCoverage){
+   for (shouldCover in 1:ReadersCount-requeredCoverage)
+  {
+    generalModel[shouldCover]<-1
+    
+  }
+  restforUnused<-(ReadersCount-requeredCoverage+1)
+ for (shouldNotcover in restforUnused:TagsCount)
+  {
+    generalModel[shouldNotcover]<--20
+    
+ }
+  
+  
+mydata<-CreateNetworkMatrix(generalModel)
+resultValidation<-CheckValidNetwork (mydata,kCoverage)
+if (resultValidation==TRUE)
+  {
+    coverageResult<-CalcFcov()
+    coverFuzzyTable<-CoverageFuzzyTable()
+    fuzzyResultCover<-SearchFuzzyResult(coverFuzzyTable,coverageResult)
+    
+    interferianceResult<-CalcFIntr()
+    interferianceFuzzyTable<-InterferianceFuzzyTable()
+    fuzzyResultInterferiance<-SearchFuzzyResult(interferianceFuzzyTable,interferianceResult)
+    
+    loadbalanceResult<-CalcFLoadBalance()
+    loadbalanceFuzzyTable<-LoadBalancingFuzzyTable()
+    fuzzyResultLoadbalance<-SearchFuzzyResult(loadbalanceFuzzyTable,loadbalanceResult)
+    
+    aggregationResult<-CalcFAgregate()
+    aggregationFuzzyTable<-AggregationFuzzyTable()
+    fuzzyResultaggregation<-SearchFuzzyResult(aggregationFuzzyTable,aggregationResult)
+  
+  }
+
+ }
+}
+#Check If The Network has minimum Reqirements For Coverage
+CheckValidNetwork<-function(enteredNetwork,kCoverage)
+{
+  validate<-TRUE
+  for (i in 1:TagsCount)
+  {
+    sum<-0
+    for (j in 1:ReadersCount)
+    {
+      if (is.na(enteredNetwork[i,j]))
+      {
+        
+      }
+      else{
+        if (enteredNetwork[i,j]-ptNumber>0)
+        {
+          sum<-sum+1
+        }
+      }
+    }
+    if (sum<kCoverage) 
+    {
+      validate<-FALSE
+    }
+  }
+  returnValue(validate)
+}
+#Search Fuzzy Table For Selected Result in Model
+SearchFuzzyResult<-function(fuzzyTable,funcResult)
+{
+  countlst<-length(fuzzyTable$Value)
+  selectedIndex<-0
+  for (i in 1:countlst)
+  {
+     if (funcResult>=fuzzyTable$Value[[i]])
+     {
+       if (i==countlst)
+       {
+         selectedIndex<-i
+         break
+       }
+       if (funcResult<fuzzyTable$Value[[i+1]]){
+         selectedIndex<-i
+         break
+       }
+       
+     }else{
+       selectedIndex<-i
+       break
+     }
+  }
+  returnValue(fuzzyTable$FuzzyResult[[selectedIndex]])
+  
+}
+#Make Fuzzy Data For Each Result in Coverage
+CoverageFuzzyTable<-function()
+{
+  
+  fuzzyArray<-list()
+  #Worst Stuation
+  fuzzyArray$Value[[1]]=-1000
+  fuzzyArray$FuzzyResult[[1]]=c(0,0,1)
+  
+  #Bad Situation
+  fuzzyArray$Value[[2]]=0
+  fuzzyArray$FuzzyResult[[2]]=c(0,1,3)
+  
+  #Medium Situation
+  fuzzyArray$Value[[3]]=70
+  fuzzyArray$FuzzyResult[[3]]=c(3,5,7)
+  
+  #Good Situation
+  fuzzyArray$Value[[4]]=90
+  fuzzyArray$FuzzyResult[[4]]=c(7,9,10)
+  
+  #Best Situation
+  fuzzyArray$Value[[5]]=1000
+  fuzzyArray$FuzzyResult[[5]]=c(9,10,10)
+  
+  returnValue(fuzzyArray)
+}
+#Make Fuzzy Data For Each Result in Interferiance
+InterferianceFuzzyTable<-function()
+{
+  fuzzyArray<-list()
+  #Worst Stuation
+  fuzzyArray$Value[[1]]=-1000
+  fuzzyArray$FuzzyResult[[1]]=c(0,0,1)
+  
+  #Bad Situation
+  fuzzyArray$Value[[2]]=-1000
+  fuzzyArray$FuzzyResult[[2]]=c(0,1,3)
+  
+  #Medium Situation
+  fuzzyArray$Value[[3]]=-1000
+  fuzzyArray$FuzzyResult[[3]]=c(3,5,7)
+  
+  #Good Situation
+  fuzzyArray$Value[[4]]=-1000
+  fuzzyArray$FuzzyResult[[4]]=c(7,9,10)
+  
+  #Best Situation
+  fuzzyArray$Value[[5]]=-1000
+  fuzzyArray$FuzzyResult[[5]]=c(9,10,10)
+  
+  returnValue(fuzzyArray)
+}
+#Make Fuzzy Data For Each Result in Load Balancing
+LoadBalancingFuzzyTable<-function()
+{
+  fuzzyArray<-list()
+  #Worst Stuation
+  fuzzyArray$Value[[1]]=-1000
+  fuzzyArray$FuzzyResult[[1]]=c(0,0,1)
+  
+  #Bad Situation
+  fuzzyArray$Value[[2]]=-1000
+  fuzzyArray$FuzzyResult[[2]]=c(0,1,3)
+  
+  #Medium Situation
+  fuzzyArray$Value[[3]]=-1000
+  fuzzyArray$FuzzyResult[[3]]=c(3,5,7)
+  
+  #Good Situation
+  fuzzyArray$Value[[4]]=-1000
+  fuzzyArray$FuzzyResult[[4]]=c(7,9,10)
+  
+  #Best Situation
+  fuzzyArray$Value[[5]]=-1000
+  fuzzyArray$FuzzyResult[[5]]=c(9,10,10)
+  
+  returnValue(fuzzyArray)
+}
+#Make Fuzzy Data For Each Result in Aggregation
+AggregationFuzzyTable<-function()
+{
+  fuzzyArray<-list()
+  #Worst Stuation
+  fuzzyArray$Value[[1]]=-1000
+  fuzzyArray$FuzzyResult[[1]]=c(0,0,1)
+  
+  #Bad Situation
+  fuzzyArray$Value[[2]]=-1000
+  fuzzyArray$FuzzyResult[[2]]=c(0,1,3)
+  
+  #Medium Situation
+  fuzzyArray$Value[[3]]=-1000
+  fuzzyArray$FuzzyResult[[3]]=c(3,5,7)
+  
+  #Good Situation
+  fuzzyArray$Value[[4]]=-1000
+  fuzzyArray$FuzzyResult[[4]]=c(7,9,10)
+  
+  #Best Situation
+  fuzzyArray$Value[[5]]=-1000
+  fuzzyArray$FuzzyResult[[5]]=c(9,10,10)
+  
+  returnValue(fuzzyArray)
 }
