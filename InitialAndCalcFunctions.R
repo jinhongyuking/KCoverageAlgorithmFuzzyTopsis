@@ -121,9 +121,11 @@ CreateLstAllNetworks <- function (iTagsCount,iReadersCount,ipt,imaxCapacity,kCov
 {
   TagsCount<<-iTagsCount
   ReadersCount<<-iReadersCount
-  ptNumber<<-ipt
-  maxCapacity<<-imaxCapacity
+  ptNumber<<-ipt #Is Tresh hold Number
+  maxCapacity<<-imaxCapacity # Capacity Of each reader
   decisionFuzzyModel<<-list()
+  generalTagPositionArray<<-list()#general List To Store List of position for tags
+  generalReaderPositionArray<<-list()#general List To Store List of position for readers
   modelCounter<-0
   generalModel=c()
  for (requeredCoverage in 0:ReadersCount-kCoverage){
@@ -322,4 +324,23 @@ AggregationFuzzyTable<-function()
   fuzzyArray$FuzzyResult[[5]]=c(9,10,10)
   
   returnValue(fuzzyArray)
+}
+#Make A Network By giving X and Y of Space And put Position On Page
+CreateNetworkPositions<-function (XNumberPage,YNumberPage,iTagCount,jReaderCount,positionTagReaderRef)
+{
+  positionTagArray<-list()
+  positionReaderArray<-list()
+  for (counterTags in 1:iTagCount)
+  {
+    positionTagArray[counterTags]<-list(list(Xpoint=runif(1, 0, XNumberPage),Ypoint=runif(1, 0, YNumberPage)))
+    
+  }
+  for (counterTags in 1:jReaderCount)
+  {
+    positionReaderArray[counterTags]<-list(list(Xpoint=runif(1, 0, XNumberPage),Ypoint=runif(1, 0, YNumberPage)))
+  }
+  eval.parent(substitute(positionTagReaderRef<-positionReaderArray))
+  returnValue(positionTagArray)
+  
+  
 }
