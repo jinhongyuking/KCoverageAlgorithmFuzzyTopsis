@@ -128,6 +128,7 @@ CreateLstAllNetworks <- function (iTagsCount,iReadersCount,ipt,imaxCapacity,kCov
   generalReaderPositionArray<<-list()#general List To Store List of position for readers
   modelCounter<-0
   generalModel=c()
+  
  for (requeredCoverage in 0:ReadersCount-kCoverage){
    for (shouldCover in 1:ReadersCount-requeredCoverage)
   {
@@ -343,4 +344,12 @@ CreateNetworkPositions<-function (XNumberPage,YNumberPage,iTagCount,jReaderCount
   returnValue(positionTagArray)
   
   
+}
+# Find A Valid Network To Start Finding Best Choices
+FindValidNewtworkToCalculate<-function(XNumberPage,YNumberPage,iTagCount,jReaderCount,KCoverage)
+{
+  for (sample in 1:10)
+  {
+    
+  }
 }
