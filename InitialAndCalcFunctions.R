@@ -360,9 +360,17 @@ CreateNetworkMatrixBasedOnPositions(lstReaders,lstTags,iTagCount,jReaderCount)
 {
   for (reader in 1:jReaderCount)
   {
+    xReader<-lstReaders[reader]$Xpoint
+    yReader<-lstReaders[reader]$Ypoint
     for (tag in 1:iTagCount)
     {
-      
+      radiatedPower<--20
+      xtag<-lstTags[tag]$Xpoint
+      ytag<-lstTags[tag]$Ypoint
+      euclidosResult<-sqrt(((xReader-xtag)^2)-((yReader-ytag)^2))
+      if (euclidosResult<=2.5){
+        radiatedPower<-1
+      }
     }
   }
 }
