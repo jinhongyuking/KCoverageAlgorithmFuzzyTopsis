@@ -350,6 +350,20 @@ FindValidNewtworkToCalculate<-function(XNumberPage,YNumberPage,iTagCount,jReader
 {
   for (sample in 1:10)
   {
-    
+    lstReaders<-list()
+    lstTags<-CreateNetworkPositions(XNumberPage,YNumberPage,iTagCount,jReaderCount,lstReaders)
+    #To Do Create Matrix And Call Initials
   }
 }
+#To Find Matrix of Network
+CreateNetworkMatrixBasedOnPositions(lstReaders,lstTags,iTagCount,jReaderCount)
+{
+  for (reader in 1:jReaderCount)
+  {
+    for (tag in 1:iTagCount)
+    {
+      
+    }
+  }
+}
+
