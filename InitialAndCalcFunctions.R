@@ -127,25 +127,8 @@ CreateLstAllNetworks <- function (iTagsCount,iReadersCount,ipt,imaxCapacity,kCov
   generalTagPositionArray<<-list()#general List To Store List of position for tags
   generalReaderPositionArray<<-list()#general List To Store List of position for readers
   modelCounter<-0
-  generalModel=c()
-  
- for (requeredCoverage in 0:ReadersCount-kCoverage){
-   for (shouldCover in 1:ReadersCount-requeredCoverage)
-  {
-    generalModel[shouldCover]<-1
-    
-  }
-  restforUnused<-(ReadersCount-requeredCoverage+1)
- for (shouldNotcover in restforUnused:TagsCount)
-  {
-    generalModel[shouldNotcover]<--20
-    
- }
-  
-  
-mydata<-CreateNetworkMatrix(generalModel)
-resultValidation<-CheckValidNetwork (mydata,kCoverage)
-if (resultValidation==TRUE)
+  resultValidation<-CheckValidNetwork (myNetwork,kCoverage)
+ if (resultValidation==TRUE)
   {
     coverageResult<-CalcFcov()
     coverFuzzyTable<-CoverageFuzzyTable()
@@ -165,7 +148,7 @@ if (resultValidation==TRUE)
   
   }
 
- }
+ 
 }
 #Check If The Network has minimum Reqirements For Coverage
 CheckValidNetwork<-function(enteredNetwork,kCoverage)
@@ -329,6 +312,7 @@ AggregationFuzzyTable<-function()
 #Make A Network By giving X and Y of Space And put Position On Page
 CreateNetworkPositions<-function (XNumberPage,YNumberPage,iTagCount,jReaderCount,positionTagReaderRef)
 {
+
   positionTagArray<-list()
   positionReaderArray<-list()
   for (counterTags in 1:iTagCount)
@@ -352,12 +336,15 @@ FindValidNewtworkToCalculate<-function(XNumberPage,YNumberPage,iTagCount,jReader
   {
     lstReaders<-list()
     lstTags<-CreateNetworkPositions(XNumberPage,YNumberPage,iTagCount,jReaderCount,lstReaders)
+    myNetwork <<- CreateNetworkMatrixBasedOnPositions(lstReaders,lstTags,iTagCount,jReaderCount)
+    
     #To Do Create Matrix And Call Initials
   }
 }
 #To Find Matrix of Network
 CreateNetworkMatrixBasedOnPositions(lstReaders,lstTags,iTagCount,jReaderCount)
 {
+  mySelectedNetwork<-matrix(NA , nr = iTagCount, nc = jReaderCount,TRUE)
   for (reader in 1:jReaderCount)
   {
     xReader<-lstReaders[reader]$Xpoint
@@ -371,7 +358,9 @@ CreateNetworkMatrixBasedOnPositions(lstReaders,lstTags,iTagCount,jReaderCount)
       if (euclidosResult<=2.5){
         radiatedPower<-1
       }
+      mySelectedNetwork[reader,tag]<-radiatedPower
     }
   }
+  returnValue(mySelectedNetwork)
 }
 
