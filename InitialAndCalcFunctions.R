@@ -117,19 +117,12 @@ CalcFAgregate<- function()
   returnValue(min) 
 } 
 #Create A List For Making Decistion Based on them
-CreateLstAllNetworks <- function (iTagsCount,iReadersCount,ipt,imaxCapacity,kCoverage)
+CreateLstAllNetworks <- function ()
 {
-  TagsCount<<-iTagsCount
-  ReadersCount<<-iReadersCount
-  ptNumber<<-ipt #Is Tresh hold Number
-  maxCapacity<<-imaxCapacity # Capacity Of each reader
-  decisionFuzzyModel<<-list()
-  generalTagPositionArray<<-list()#general List To Store List of position for tags
-  generalReaderPositionArray<<-list()#general List To Store List of position for readers
+  
+  decisionFuzzyModel<-list() # To Find The Fuzzy Descition Table
   modelCounter<-0
-  resultValidation<-CheckValidNetwork (myNetwork,kCoverage)
- if (resultValidation==TRUE)
-  {
+ 
     coverageResult<-CalcFcov()
     coverFuzzyTable<-CoverageFuzzyTable()
     fuzzyResultCover<-SearchFuzzyResult(coverFuzzyTable,coverageResult)
@@ -146,8 +139,8 @@ CreateLstAllNetworks <- function (iTagsCount,iReadersCount,ipt,imaxCapacity,kCov
     aggregationFuzzyTable<-AggregationFuzzyTable()
     fuzzyResultaggregation<-SearchFuzzyResult(aggregationFuzzyTable,aggregationResult)
   
-  }
-
+  
+returnValue(decisionFuzzyModel)
  
 }
 #Check If The Network has minimum Reqirements For Coverage
@@ -330,35 +323,52 @@ CreateNetworkPositions<-function (XNumberPage,YNumberPage,iTagCount,jReaderCount
   
 }
 # Find A Valid Network To Start Finding Best Choices
-FindValidNewtworkToCalculate<-function(XNumberPage,YNumberPage,iTagCount,jReaderCount,KCoverage)
+FindValidNewtworkToCalculate<-function(XNumberPage,YNumberPage,iTagCount,jReaderCount,KCoverage,ipt,imaxCapacity)
 {
-  for (sample in 1:10)
+  TagsCount<<-iTagCount
+  ReadersCount<<-jReaderCount
+  ptNumber<<-ipt #Is Tresh hold Number
+  maxCapacity<<-imaxCapacity # Capacity Of each reader
+  sampleCounnt<-50
+  validindex<-1
+  SampleNetworks<<-list()
+  for (sample in 1:sampleCounnt)
   {
     lstReaders<-list()
     lstTags<-CreateNetworkPositions(XNumberPage,YNumberPage,iTagCount,jReaderCount,lstReaders)
     myNetwork <<- CreateNetworkMatrixBasedOnPositions(lstReaders,lstTags,iTagCount,jReaderCount)
-    
+    resultValidation<-CheckValidNetwork (myNetwork,KCoverage)
+    if (resultValidation){
+        SampleNetworks[[validindex]]<<-lstTags
+        validindex<-validindex+1
+       resultFuzzyNetwork<- CreateLstAllNetworks()
     #To Do Create Matrix And Call Initials
+    }
+  
   }
 }
 #To Find Matrix of Network
-CreateNetworkMatrixBasedOnPositions(lstReaders,lstTags,iTagCount,jReaderCount)
+CreateNetworkMatrixBasedOnPositions<-function (lstReaders,lstTags,iTagCount,jReaderCount)
 {
   mySelectedNetwork<-matrix(NA , nr = iTagCount, nc = jReaderCount,TRUE)
   for (reader in 1:jReaderCount)
   {
-    xReader<-lstReaders[reader]$Xpoint
-    yReader<-lstReaders[reader]$Ypoint
+    xReader<-lstReaders[[reader]]$Xpoint
+    yReader<-lstReaders[[reader]]$Ypoint
     for (tag in 1:iTagCount)
     {
       radiatedPower<--20
-      xtag<-lstTags[tag]$Xpoint
-      ytag<-lstTags[tag]$Ypoint
-      euclidosResult<-sqrt(((xReader-xtag)^2)-((yReader-ytag)^2))
+      xtag<-lstTags[[tag]]$Xpoint
+      ytag<-lstTags[[tag]]$Ypoint
+      resultSum<-((xReader-xtag)^2)-((yReader-ytag)^2)
+      if (resultSum<0){
+          resultSum<-resultSum*-1
+      }
+      euclidosResult<-sqrt(resultSum)
       if (euclidosResult<=2.5){
         radiatedPower<-1
       }
-      mySelectedNetwork[reader,tag]<-radiatedPower
+      mySelectedNetwork[tag,reader]<-radiatedPower
     }
   }
   returnValue(mySelectedNetwork)
