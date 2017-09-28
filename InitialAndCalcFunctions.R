@@ -120,27 +120,30 @@ CalcFAgregate<- function()
 CreateLstAllNetworks <- function ()
 {
   
-  decisionFuzzyModel<-list() # To Find The Fuzzy Descition Table
+  decisionFuzzyModel<-list(list()) # To Find The Fuzzy Descition Table
   modelCounter<-0
  
     coverageResult<-CalcFcov()
     coverFuzzyTable<-CoverageFuzzyTable()
     fuzzyResultCover<-SearchFuzzyResult(coverFuzzyTable,coverageResult)
+    decisionFuzzyModel[[1]]$FCover<-fuzzyResultCover
     
     interferianceResult<-CalcFIntr()
     interferianceFuzzyTable<-InterferianceFuzzyTable()
     fuzzyResultInterferiance<-SearchFuzzyResult(interferianceFuzzyTable,interferianceResult)
+    decisionFuzzyModel[[1]]$FInterFeri<-fuzzyResultInterferiance
     
     loadbalanceResult<-CalcFLoadBalance()
     loadbalanceFuzzyTable<-LoadBalancingFuzzyTable()
     fuzzyResultLoadbalance<-SearchFuzzyResult(loadbalanceFuzzyTable,loadbalanceResult)
+    decisionFuzzyModel[[1]]$FLoadBalance<-fuzzyResultLoadbalance
     
     aggregationResult<-CalcFAgregate()
     aggregationFuzzyTable<-AggregationFuzzyTable()
     fuzzyResultaggregation<-SearchFuzzyResult(aggregationFuzzyTable,aggregationResult)
+    decisionFuzzyModel[[1]]$FAggrigate<-fuzzyResultaggregation
   
-  
-returnValue(decisionFuzzyModel)
+    returnValue(decisionFuzzyModel)
  
 }
 #Check If The Network has minimum Reqirements For Coverage
@@ -329,9 +332,10 @@ FindValidNewtworkToCalculate<-function(XNumberPage,YNumberPage,iTagCount,jReader
   ReadersCount<<-jReaderCount
   ptNumber<<-ipt #Is Tresh hold Number
   maxCapacity<<-imaxCapacity # Capacity Of each reader
-  sampleCounnt<-50
+  sampleCounnt<-200
   validindex<-1
   SampleNetworks<<-list()
+  GeneralFuzzyReslt<<-list(list())
   for (sample in 1:sampleCounnt)
   {
     lstReaders<-list()
@@ -339,13 +343,15 @@ FindValidNewtworkToCalculate<-function(XNumberPage,YNumberPage,iTagCount,jReader
     myNetwork <<- CreateNetworkMatrixBasedOnPositions(lstReaders,lstTags,iTagCount,jReaderCount)
     resultValidation<-CheckValidNetwork (myNetwork,KCoverage)
     if (resultValidation){
-        SampleNetworks[[validindex]]<<-lstTags
-        validindex<-validindex+1
+       SampleNetworks[[validindex]]<<-lstTags
        resultFuzzyNetwork<- CreateLstAllNetworks()
-    #To Do Create Matrix And Call Initials
+       GeneralFuzzyReslt[[validindex]]<<-resultFuzzyNetwork
+       validindex<-validindex+1
     }
   
   }
+  # ToDo , We have our decition Making Table and Networks
+  #Now It's time to use Topsis fuzzy to find the ideal soltion
 }
 #To Find Matrix of Network
 CreateNetworkMatrixBasedOnPositions<-function (lstReaders,lstTags,iTagCount,jReaderCount)
