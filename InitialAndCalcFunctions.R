@@ -350,6 +350,11 @@ FindValidNewtworkToCalculate<-function(XNumberPage,YNumberPage,iTagCount,jReader
     }
   
   }
+  lstdecition<-ConvertFuzzyNumbersToPureNumbers(GeneralFuzzyReslt,validindex-1)
+  matrixDecition<-matrix(lstdecition,nrow=validindex,ncol=4)
+  w <- c(1,1,1,1)
+  cb <- c('max','max','max','max','max')
+  resultTopsisFuzzy<<-FuzzyTOPSISLinear(matrixDecition,w,cb)
   # ToDo , We have our decition Making Table and Networks
   #Now It's time to use Topsis fuzzy to find the ideal soltion
 }
@@ -379,7 +384,44 @@ CreateNetworkMatrixBasedOnPositions<-function (lstReaders,lstTags,iTagCount,jRea
   }
   returnValue(mySelectedNetwork)
 }
-
+#Create A List To Pass to a topsis function
+ConvertFuzzyNumbersToPureNumbers<-function(lstFuzzyNumbers,countResults)
+  {
+ lstResult<-list()
+ indexlst<-0
+   for (sample in 1:countResults)
+  {
+     sumdata<-0
+    sumdata<-sumdata+lstFuzzyNumbers[[sample]][[1]]$FCover[1]
+    sumdata<-sumdata+lstFuzzyNumbers[[sample]][[1]]$FCover[2]
+    sumdata<-sumdata+lstFuzzyNumbers[[sample]][[1]]$FCover[3]
+    resultFCover<-sumdata/3
+    indexlst<-indexlst+1
+    lstResult[indexlst]<-resultFCover
+    sumdata<-0
+    sumdata<-sumdata+lstFuzzyNumbers[[sample]][[1]]$FInterFeri[1]
+    sumdata<-sumdata+lstFuzzyNumbers[[sample]][[1]]$FInterFeri[2]
+    sumdata<-sumdata+lstFuzzyNumbers[[sample]][[1]]$FInterFeri[3]
+    resultFInterFer<-sumdata/3
+    indexlst<-indexlst+1
+    lstResult[indexlst]<-resultFInterFer
+    sumdata<-0
+    sumdata<-sumdata+lstFuzzyNumbers[[sample]][[1]]$FLoadBalance[1]
+    sumdata<-sumdata+lstFuzzyNumbers[[sample]][[1]]$FLoadBalance[2]
+    sumdata<-sumdata+lstFuzzyNumbers[[sample]][[1]]$FLoadBalance[3]
+    resultFLoadBalance<-sumdata/3
+    indexlst<-indexlst+1
+    lstResult[indexlst]<-resultFLoadBalance
+    sumdata<-0
+    sumdata<-sumdata+lstFuzzyNumbers[[sample]][[1]]$FAggrigate[1]
+    sumdata<-sumdata+lstFuzzyNumbers[[sample]][[1]]$FAggrigate[2]
+    sumdata<-sumdata+lstFuzzyNumbers[[sample]][[1]]$FAggrigate[3]
+    resultFAggrigate<-sumdata/3
+    indexlst<-indexlst+1
+    lstResult[indexlst]<-resultFAggrigate
+  }
+ returnValue(lstResult)
+}
 #Calculating Fuzzy Result Of Topsis In Network
               #d <- matrix(c(5.7,6.3,6.3,7.7,8.3,8,9.3,9.7,9,5,9,7,7,10,9,9,10,10,5.7,8.3,7,7.7,9.7,9,
               #'  9,10,10,8.33,9,7,9.67,10,9,10,10,10,3,7,6.3,5,9,8.3,7,10,9.7),nrow=3,ncol=15)
