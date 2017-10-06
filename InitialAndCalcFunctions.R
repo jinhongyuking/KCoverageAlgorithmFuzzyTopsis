@@ -351,10 +351,17 @@ FindValidNewtworkToCalculate<-function(XNumberPage,YNumberPage,iTagCount,jReader
   
   }
   lstdecition<-ConvertFuzzyNumbersToPureNumbers(GeneralFuzzyReslt,validindex-1)
-  matrixDecition<-matrix(lstdecition,nrow=validindex,ncol=4)
+  matrixDecition<-matrix(lstdecition,nrow=validindex-1,ncol=4)
   w <- c(1,1,1,1)
-  cb <- c('max','max','max','max','max')
-  resultTopsisFuzzy<<-FuzzyTOPSISLinear(matrixDecition,w,cb)
+  cb <- c()#c('max','max','max','max','max')
+  numberofcb=ncol(matrixDecition)/(validindex-1)
+  for(cbcounter in 1:numberofcb)
+  {
+    cb[cbcounter]<-'max'
+  }
+  if (validindex>1){
+  resultTopsisFuzzy<<-FuzzyTOPSISLinear(matrixDecition,w,cb,validindex-1)
+  }
   # ToDo , We have our decition Making Table and Networks
   #Now It's time to use Topsis fuzzy to find the ideal soltion
 }
@@ -387,7 +394,7 @@ CreateNetworkMatrixBasedOnPositions<-function (lstReaders,lstTags,iTagCount,jRea
 #Create A List To Pass to a topsis function
 ConvertFuzzyNumbersToPureNumbers<-function(lstFuzzyNumbers,countResults)
   {
- lstResult<-list()
+ lstResult<-c()
  indexlst<-0
    for (sample in 1:countResults)
   {
@@ -430,7 +437,8 @@ ConvertFuzzyNumbersToPureNumbers<-function(lstFuzzyNumbers,countResults)
               #'  FuzzyTOPSISLinear(d,w,cb)
 FuzzyTOPSISLinear <- function(decision, #matrix with all the alternatives
                               weights,  #vector with the numeric values of the weights
-                              cb        #vector with the "type" of the criteria (benefit = "max", cost = "min")
+                              cb ,       #vector with the "type" of the criteria (benefit = "max", cost = "min")
+                              numberofAlternates
 )
 {
   #Checking the arguments
@@ -438,7 +446,7 @@ FuzzyTOPSISLinear <- function(decision, #matrix with all the alternatives
     stop("'decision' must be a matrix with the values of the alternatives")
   if(missing(weights))
     stop("a vector containing n weigths, adding up to 1, should be provided")
-  #   if(sum(weights[seq(2, length(weights), 3)]) != 1)
+  #   if(sum(weights[seq(2, length(weights), numberofAlternates)]) != 1)
   #     stop("The sum of 'weights' is not equal to 1")
   if(! is.character(cb))
     stop("'cb' must be a character vector with the type of the criteria")
@@ -446,7 +454,7 @@ FuzzyTOPSISLinear <- function(decision, #matrix with all the alternatives
     stop("'cb' should contain only 'max' or 'min'")
   if(length(weights) != ncol(decision))
     stop("length of 'weights' does not match the number of the criteria")
-  if(length(cb) != ncol(decision)/3)
+  if(length(cb) != ncol(decision)/numberofAlternates)
     stop("length of 'cb' does not match the number of the criteria")
   
   
@@ -455,7 +463,7 @@ FuzzyTOPSISLinear <- function(decision, #matrix with all the alternatives
   # Conversion of cb in "fuzzy" values
   new_cb <- c(1:ncol(decision))
   k=1
-  for(j in seq(1, ncol(decision), 3)){
+  for(j in seq(1, ncol(decision), numberofAlternates)){
     if (cb[k] == 'max'){
       new_cb[j] <- 'max'
       new_cb[j+1] <- 'max'
@@ -472,12 +480,12 @@ FuzzyTOPSISLinear <- function(decision, #matrix with all the alternatives
   #1. Normalization and weighting
   N <- matrix(nrow = nrow(decision), ncol = ncol(decision))
   
-  for(i in seq(1, ncol(decision), 3)){
+  for(i in seq(1, ncol(decision), 1)){
     if (new_cb[i] == 'max'){
-      denominator = max(decision[,i+2])
+      denominator = max(decision[,i])
       N[,i] = decision[,i]/denominator
-      N[,i+1] = decision[,i+1]/denominator
-      N[,i+2] = decision[,i+2]/denominator
+    #  N[,i+1] = decision[,i+1]/denominator
+     # N[,i+2] = decision[,i+2]/denominator
     }
     else{
       denominator = min(decision[,i])
