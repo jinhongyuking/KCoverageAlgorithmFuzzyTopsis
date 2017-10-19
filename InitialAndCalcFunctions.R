@@ -496,7 +496,7 @@ FuzzyTOPSISLinear <- function(decision, #matrix with all the alternatives
   }
   
   W <- diag(weights)
-  NW <- N%*%W
+  NW <- N%*%weights
   
   #2. Ideal solutions
   posI <- rep(1,ncol(decision))
