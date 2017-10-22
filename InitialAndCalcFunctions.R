@@ -372,7 +372,7 @@ FindValidNewtworkToCalculate<-function(XNumberPage,YNumberPage,iTagCount,jReader
             ylst[selectedpossition]<-mymodely
           
     }
-      plot(unlist(xlst),unlist(ylst))
+      plot(unlist(xlst),unlist(ylst),type = "n",xlab = "X Position",ylab = "Y Position"             )
   }
   # ToDo , We have our decition Making Table and Networks
   #Now It's time to use Topsis fuzzy to find the ideal soltion
