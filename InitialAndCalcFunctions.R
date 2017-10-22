@@ -360,14 +360,19 @@ FindValidNewtworkToCalculate<-function(XNumberPage,YNumberPage,iTagCount,jReader
     cb[cbcounter]<-'max'
   }
   if (validindex>1){
+    xlst<-list()
+    ylst<-list()
   #resultTopsisFuzzy<<-FuzzyTOPSISLinear(matrixDecition,w,cb,validindex-1)
     myModel<-SampleNetworks[1]
     for (selectedpossition in 1:iTagCount)
     {
-            mymodelx<-myModel[selectedpossition]$Xpoint
-            mymodely<-myModel[selectedpossition]$Ypoint
-            plot(mymodelx,mymodely)
+            mymodelx<-myModel[[1]][selectedpossition][[1]]$Xpoint
+            xlst[selectedpossition]<-mymodelx
+            mymodely<-myModel[[1]][selectedpossition][[1]]$Ypoint
+            ylst[selectedpossition]<-mymodely
+          
     }
+      plot(unlist(xlst),unlist(ylst))
   }
   # ToDo , We have our decition Making Table and Networks
   #Now It's time to use Topsis fuzzy to find the ideal soltion
